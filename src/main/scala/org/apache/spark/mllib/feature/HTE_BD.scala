@@ -14,7 +14,7 @@ class HTE_BD(val data: RDD[LabeledPoint], val nTrees: Int, val k: Int, val vote:
 
   def runFilter(): RDD[LabeledPoint] = {
 
-    val cvdat = MLUtils.kFold(data, k, 12345)
+    val cvdat = MLUtils.kFold(data, k, seed)
 
     //RF Parameters
     val numClasses = labels.length
