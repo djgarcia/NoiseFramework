@@ -5,15 +5,18 @@ import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.rdd.RDD.rddToPairRDDFunctions
 
-class ENN_BD(val data: RDD[LabeledPoint], val numClass: Int, val numFeatures: Int) extends Serializable {
+class ENN_BD(val data: RDD[LabeledPoint], val k: Int = 1) extends Serializable {
 
   def runFilter(): RDD[LabeledPoint] = {
 
-    val knn = kNN_IS.setup(data, data, 1, 2, numClass, numFeatures, data.partitions.size, 64, -1, 1)
+    val numClass = data.map(_.label).distinct().collect().length
+    val numFeatures = data.first().features.size
 
-    val predictions = knn.predict(data.context).map(_._1).zipWithIndex.map { case (k, v) => (v, k) }
+    val knn = kNN_IS.setup(data, data, k, 2, numClass, numFeatures, data.partitions.length, 64, -1, 1)
 
-    val filteredData = data.zipWithIndex.map { case (k, v) => (v, k) }.join(predictions).map {
+    val predictions = knn.predict(data.context).map(_._1).zipWithIndex.map { case (key, v) => (v, key) }
+
+    val filteredData = data.zipWithIndex.map { case (key, v) => (v, key) }.join(predictions).map {
       case (key, (l, pred)) =>
         if (l.label == pred) {
           l

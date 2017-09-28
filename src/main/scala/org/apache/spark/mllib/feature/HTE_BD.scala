@@ -7,14 +7,16 @@ import org.apache.spark.mllib.classification.LogisticRegressionWithLBFGS
 import org.apache.spark.mllib.classification.kNN_IS.kNN_IS
 import org.apache.spark.mllib.util.MLUtils
 
-class HTE_BD(val data: RDD[LabeledPoint], val nTrees: Int, val k: Int, val vote: Int, val numClass: Int, val numFeatures: Int, val maxDepth: Int = 10, val seed: Int) extends Serializable {
+class HTE_BD(val data: RDD[LabeledPoint], val nTrees: Int, val partitions: Int, val vote: Int, val k: Int = 1, val maxDepth: Int = 10, val seed: Int) extends Serializable {
 
   private val labels = data.map(_.label).distinct().collect()
-  private var modelNoise: Array[RDD[LabeledPoint]] = new Array[RDD[LabeledPoint]](k)
+  private var modelNoise: Array[RDD[LabeledPoint]] = new Array[RDD[LabeledPoint]](partitions)
 
   def runFilter(): RDD[LabeledPoint] = {
 
-    val cvdat = MLUtils.kFold(data, k, 12345)
+    val cvdat = MLUtils.kFold(data, partitions, 12345)
+    val numClass = data.map(_.label).distinct().collect().length
+    val numFeatures = data.first().features.size
 
     //RF Parameters
     val numClasses = labels.length
@@ -33,7 +35,7 @@ class HTE_BD(val data: RDD[LabeledPoint], val nTrees: Int, val k: Int, val vote:
             .setNumClasses(labels.length)
             .run(train)
 
-          val knnModel = kNN_IS.setup(train, test, 1, 2, numClass, numFeatures, data.partitions.size, 64, -1, 1)
+          val knnModel = kNN_IS.setup(train, test, k, 2, numClass, numFeatures, data.partitions.length, 64, -1, 1)
 
           val rfModel = RandomForest.trainClassifier(train, numClasses, categoricalFeaturesInfo,
             nTrees, featureSubsetStrategy, impurity, maxDepth, maxBins, seed)
@@ -71,7 +73,7 @@ class HTE_BD(val data: RDD[LabeledPoint], val nTrees: Int, val k: Int, val vote:
 
     var filteredData = modelNoise(0).filter { point => point.label != -1 }
 
-    for (i <- 1 to k - 1) {
+    for (i <- 1 to partitions - 1) {
       filteredData = filteredData.union(modelNoise(i).filter { point => point.label != -1 })
     }
 
