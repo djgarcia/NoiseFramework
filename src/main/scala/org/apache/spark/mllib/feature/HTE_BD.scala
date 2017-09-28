@@ -14,7 +14,7 @@ class HTE_BD(val data: RDD[LabeledPoint], val nTrees: Int, val partitions: Int, 
 
   def runFilter(): RDD[LabeledPoint] = {
 
-    val cvdat = MLUtils.kFold(data, partitions, 12345)
+    val cvdat = MLUtils.kFold(data, partitions, seed)
     val numClass = data.map(_.label).distinct().collect().length
     val numFeatures = data.first().features.size
 
