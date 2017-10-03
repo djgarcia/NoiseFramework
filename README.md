@@ -70,8 +70,7 @@ import org.apache.spark.mllib.feature._
 // Data must be cached in order to improve the performance
 
 val enn_bd_model = new ENN_BD(trainingData, // RDD[LabeledPoint]
-                              numClass, // number of classes
-                              numFeatures) // number of features
+                              k) // number of neighbors
 
 val enn_bd = enn_bd_model.runFilter()
 ```
