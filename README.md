@@ -23,13 +23,13 @@ import org.apache.spark.mllib.feature._
 
 val nTrees = 100
 val maxDepth = 10
-val k = 4
+val partitions = 4
 
 // Data must be cached in order to improve the performance
 
 val hme_bd_model = new HME_BD(trainingData, // RDD[LabeledPoint]
                               nTrees, // size of the Random Forests
-                              k, // number of partitions
+                              partitions, // number of partitions
                               maxDepth, // depth of the Random Forests
                               seed) // seed for the Random Forests
 
@@ -44,7 +44,7 @@ import org.apache.spark.mllib.feature._
 
 val nTrees = 100
 val maxDepth = 10
-val k = 4
+val partitions = 4
 val voting = 0 // 0 = majority, 1 = consensus
 
 // Data must be cached in order to improve the performance
