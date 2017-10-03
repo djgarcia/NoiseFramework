@@ -51,10 +51,9 @@ val voting = 0 // 0 = majority, 1 = consensus
 
 val hte_bd_model = new HTE_BD(trainingData, // RDD[LabeledPoint]
                               nTrees, // size of the Random Forests
-                              k, // number of partitions
+                              partitions, // number of partitions
                               vote, // voting strategy
-                              numClass, // number of classes
-                              numFeatures, // number of features
+                              k, // number of neighbors
                               maxDepth, // depth of the Random Forests
                               seed) // seed for the Random Forests
 
